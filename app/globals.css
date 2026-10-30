@@ -1,0 +1,419 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   DESIGN SYSTEM TOKENS: ORANGE & WHITE SIGNATURE THEME
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --font-geist-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Dark Mode (Warm Obsidian with Vibrant Orange & White) */
+  --background: #0c0a09;
+  --foreground: #fafaf9;
+  --card-bg: rgba(23, 20, 18, 0.88);
+  --card-muted: #1c1917;
+  --card-border: rgba(255, 255, 255, 0.09);
+  --card-hover-border: rgba(249, 115, 22, 0.45);
+  --card-hover-bg: rgba(255, 255, 255, 0.035);
+  --modal-bg: #14110f;
+  --header-bg: rgba(12, 10, 9, 0.88);
+  --input-bg: rgba(255, 255, 255, 0.04);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-text: #ffffff;
+  --placeholder: #78716c;
+  --popover-bg: #14110f;
+  --popover-border: rgba(255, 255, 255, 0.12);
+  --shadow-card: 0 4px 25px -2px rgba(0, 0, 0, 0.6);
+  --primary-orange: #f97316;
+  --primary-orange-hover: #ea580c;
+  --badge-orange-bg: rgba(249, 115, 22, 0.16);
+  --badge-orange-text: #fdba74;
+  --badge-orange-border: rgba(249, 115, 22, 0.35);
+  --badge-emerald-bg: rgba(16, 185, 129, 0.16);
+  --badge-emerald-text: #6ee7b7;
+  --badge-emerald-border: rgba(16, 185, 129, 0.3);
+}
+
+html.light, [data-theme="light"] {
+  /* Light Mode (Luminous White Canvas with High-Energy Orange) */
+  --background: #ffffff;
+  --foreground: #1c1917;
+  --card-bg: #ffffff;
+  --card-muted: #fff7ed;
+  --card-border: #fed7aa;
+  --card-hover-border: #f97316;
+  --card-hover-bg: #fffaf5;
+  --modal-bg: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.94);
+  --input-bg: #ffffff;
+  --input-border: #fdba74;
+  --input-text: #1c1917;
+  --placeholder: #a8a29e;
+  --popover-bg: #ffffff;
+  --popover-border: #fed7aa;
+  --shadow-card: 0 4px 24px -2px rgba(249, 115, 22, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --primary-orange: #f97316;
+  --primary-orange-hover: #ea580c;
+  --badge-orange-bg: #fff7ed;
+  --badge-orange-text: #c2410c;
+  --badge-orange-border: #fed7aa;
+  --badge-emerald-bg: #ecfdf5;
+  --badge-emerald-text: #047857;
+  --badge-emerald-border: #a7f3d0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL BODY & WARM AMBIENT BACKGROUNDS
+   ───────────────────────────────────────────────────────────── */
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  background-image: 
+    radial-gradient(at 8% 12%, rgba(249, 115, 22, 0.12) 0px, transparent 55%),
+    radial-gradient(at 90% 85%, rgba(251, 146, 60, 0.09) 0px, transparent 50%),
+    radial-gradient(at 50% 45%, rgba(245, 158, 11, 0.06) 0px, transparent 65%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+html.light body {
+  background-color: #fafaf9;
+  background-image: 
+    radial-gradient(at 5% 10%, rgba(249, 115, 22, 0.08) 0px, transparent 50%),
+    radial-gradient(at 95% 90%, rgba(251, 146, 60, 0.06) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(254, 215, 170, 0.25) 0px, transparent 70%);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GLASS PANELS & CARDS (ORANGE & WHITE ACCENTS)
+   ───────────────────────────────────────────────────────────── */
+
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel-hover:hover {
+  border-color: var(--card-hover-border);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -8px rgba(249, 115, 22, 0.18);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LIGHT THEME OVERRIDES (CRISP WHITE SURFACES & ORANGE HIGHLIGHTS)
+   ───────────────────────────────────────────────────────────── */
+
+html.light .glass-panel {
+  background: #ffffff !important;
+  border-color: rgba(254, 215, 170, 0.7) !important;
+  box-shadow: 0 4px 24px -2px rgba(249, 115, 22, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .glass-panel-hover:hover {
+  border-color: #f97316 !important;
+  background: #fffaf5 !important;
+  box-shadow: 0 14px 34px -6px rgba(249, 115, 22, 0.16) !important;
+}
+
+/* Modals & Dropdown Surfaces in Light Mode */
+html.light .bg-\[\#0e111d\],
+html.light .bg-\[\#0f111c\],
+html.light .bg-\[\#0f111c\]\/80,
+html.light .bg-\[\#0f111c\]\/90,
+html.light .bg-\[\#0e101b\],
+html.light .bg-\[\#0d0f18\],
+html.light .bg-\[\#0d0f18\]\/90,
+html.light .bg-\[\#0d0f18\]\/95,
+html.light .bg-\[\#0d0f18\]\/98,
+html.light .bg-\[\#07080c\],
+html.light .bg-\[\#07090e\],
+html.light .bg-\[\#090a0f\],
+html.light .bg-\[\#07080d\],
+html.light .bg-\[\#0a0c14\],
+html.light .bg-\[\#0a0c14\]\/80,
+html.light .bg-\[\#0c0f1a\],
+html.light .bg-\[\#131626\],
+html.light .bg-\[\#121526\],
+html.light .bg-\[\#161a29\],
+html.light .bg-\[\#0d0f1a\],
+html.light .bg-\[\#0b0d18\] {
+  background-color: #ffffff !important;
+}
+
+/* Secondary / inner boxes in Light Mode */
+html.light .bg-\[\#121526\],
+html.light .bg-\[\#161a29\],
+html.light .bg-\[\#0d0f1a\],
+html.light .bg-\[\#0b0d18\] {
+  background-color: #fff7ed !important;
+}
+
+/* Ring colors in Light Mode */
+html.light .ring-\[\#0e111d\],
+html.light .ring-white\/10,
+html.light .ring-white\/20 {
+  --tw-ring-color: #fed7aa !important;
+}
+
+/* Header in Light Mode */
+html.light header {
+  background-color: var(--header-bg) !important;
+  border-bottom-color: #fed7aa !important;
+}
+
+/* All dark borders in Light Mode */
+html.light .border-white\/5,
+html.light .border-white\/10,
+html.light .border-white\/15,
+html.light .border-white\/20,
+html.light .border-white\/\[0\.08\],
+html.light .border-white\/\[0\.06\] {
+  border-color: #fed7aa !important;
+}
+
+/* Translucent white layers in Light Mode */
+html.light .bg-white\/\[0\.02\],
+html.light .bg-white\/\[0\.03\],
+html.light .bg-white\/\[0\.04\],
+html.light .bg-white\/5 {
+  background-color: rgba(255, 247, 237, 0.75) !important;
+}
+
+html.light .bg-white\/\[0\.06\],
+html.light .bg-white\/10 {
+  background-color: rgba(254, 215, 170, 0.45) !important;
+}
+
+html.light .hover\:bg-white\/5:hover,
+html.light .hover\:bg-white\/\[0\.08\]:hover,
+html.light .hover\:bg-white\/\[0\.12\]:hover {
+  background-color: #fff7ed !important;
+}
+
+html.light .hover\:bg-white\/10:hover {
+  background-color: #fed7aa !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TYPOGRAPHY & HIGH-CONTRAST IN LIGHT MODE
+   ───────────────────────────────────────────────────────────── */
+
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6 {
+  color: #1c1917 !important;
+}
+
+html.light p.text-zinc-100,
+html.light span.text-zinc-100,
+html.light div.text-zinc-100,
+html.light a.text-zinc-100 {
+  color: #1c1917 !important;
+}
+
+html.light p.text-zinc-200,
+html.light span.text-zinc-200,
+html.light div.text-zinc-200,
+html.light a.text-zinc-200 {
+  color: #292524 !important;
+}
+
+html.light p.text-zinc-300,
+html.light span.text-zinc-300,
+html.light div.text-zinc-300,
+html.light a.text-zinc-300 {
+  color: #44403c !important;
+}
+
+html.light p.text-zinc-400,
+html.light span.text-zinc-400,
+html.light div.text-zinc-400,
+html.light a.text-zinc-400 {
+  color: #78716c !important;
+}
+
+html.light p.text-zinc-500,
+html.light span.text-zinc-500,
+html.light div.text-zinc-500,
+html.light a.text-zinc-500 {
+  color: #78716c !important;
+}
+
+html.light p.text-zinc-600,
+html.light span.text-zinc-600,
+html.light div.text-zinc-600 {
+  color: #a8a29e !important;
+}
+
+/* Primary Orange & White Buttons: Solid vibrant orange with bright white text */
+.btn-orange-primary,
+html.light .bg-orange-500,
+html.light .bg-orange-600,
+html.dark .bg-orange-500,
+html.dark .bg-orange-600 {
+  background-color: #f97316 !important;
+  color: #ffffff !important;
+}
+
+.btn-orange-primary:hover,
+html.light .bg-orange-500:hover,
+html.light .bg-orange-600:hover,
+html.dark .bg-orange-500:hover,
+html.dark .bg-orange-600:hover {
+  background-color: #ea580c !important;
+  color: #ffffff !important;
+}
+
+html.light .bg-orange-500 *,
+html.light .bg-orange-600 *,
+.btn-orange-primary * {
+  color: #ffffff !important;
+}
+
+/* Secondary Button / Pill in Light Mode */
+html.light .text-orange-400,
+html.light .text-orange-300 {
+  color: #ea580c !important;
+}
+
+html.light .border-orange-500\/20,
+html.light .border-orange-500\/30,
+html.light .border-orange-500\/40 {
+  border-color: #fed7aa !important;
+}
+
+html.light .bg-orange-500\/10,
+html.light .bg-orange-500\/15,
+html.light .bg-orange-500\/20 {
+  background-color: #fff7ed !important;
+  color: #c2410c !important;
+}
+
+/* Inputs, Textareas, Selects in Light Mode */
+html.light input,
+html.light textarea,
+html.light select {
+  color: #1c1917 !important;
+  background-color: #ffffff !important;
+  border-color: #fed7aa !important;
+}
+
+html.light input:focus,
+html.light textarea:focus,
+html.light select:focus {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #a8a29e !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PROBLEM-SOLVING ENGINE HERO BANNER & BADGES IN LIGHT MODE
+   ───────────────────────────────────────────────────────────── */
+
+/* Verified Solution Hero Banner in Light Mode */
+html.light section.border-2.border-emerald-500\/40 {
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.98), rgba(240, 253, 250, 0.96)) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 10px 30px -8px rgba(16, 185, 129, 0.12) !important;
+}
+
+html.light section.border-2.border-emerald-500\/40 * {
+  color: inherit;
+}
+
+html.light section.border-2.border-emerald-500\/40 .text-emerald-400 {
+  color: #047857 !important;
+}
+
+html.light section.border-2.border-emerald-500\/40 .text-zinc-100,
+html.light section.border-2.border-emerald-500\/40 .text-zinc-200 {
+  color: #064e3b !important;
+}
+
+html.light section.border-2.border-emerald-500\/40 .text-zinc-300,
+html.light section.border-2.border-emerald-500\/40 .text-zinc-400 {
+  color: #047857 !important;
+}
+
+html.light section.border-2.border-emerald-500\/40 .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+/* Status Badges */
+html.light .bg-emerald-500\/20,
+html.light .bg-emerald-500\/15,
+html.light .bg-emerald-500\/10 {
+  background-color: var(--badge-emerald-bg) !important;
+  color: var(--badge-emerald-text) !important;
+  border-color: var(--badge-emerald-border) !important;
+}
+
+html.light .bg-amber-500\/20,
+html.light .bg-amber-500\/15,
+html.light .bg-amber-500\/10 {
+  background-color: #fff7ed !important;
+  color: #c2410c !important;
+  border-color: #fed7aa !important;
+}
+
+/* Keep gradient clips working */
+html.light .bg-clip-text {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLLBAR & SELECTION
+   ───────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(249, 115, 22, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(249, 115, 22, 0.5);
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(249, 115, 22, 0.35);
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(234, 88, 12, 0.6);
+}

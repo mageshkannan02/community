@@ -1,0 +1,721 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  generatedFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Visibility {
+  private
+  public
+}
+
+model RolesMaster {
+  id String @id @default(uuid()) @db.Uuid
+  name String 
+  description String? @db.Text
+  permissions Json
+  created_at DateTime @default(now())
+  updated_at DateTime
+  is_active Boolean @default(false)
+  user Users[]
+  community_roles CommunityMembers[]
+
+  @@map("roles_masters")
+}
+
+model CategoriesMaster {
+  id String @id @default(uuid()) @db.Uuid
+  name String @unique
+  description String? @db.Text
+  is_active Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime
+  community_catogories CommunityCategory[]
+
+  @@map("categories_masters")
+}
+
+model TagsMaster {
+  id String @id @default(uuid()) @db.Uuid
+  name String @unique
+  description String? @db.Text
+  is_active Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime
+  discussion_tags DiscussionTags[]
+
+  @@map("tags_masters")
+}
+
+model StatusesMaster {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  code String @unique
+  entity_type String? // e.g. "event", "request", "poll", "survey"
+  is_active Boolean @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("statuses_masters")
+}
+
+model Users {
+  id String @id @default(uuid()) @db.Uuid
+  full_name String @unique 
+  role_id String @db.Uuid
+  role RolesMaster @relation(fields: [role_id], references: [id])
+  email String @unique
+  password String @db.Text
+  avatar_url String? @db.Text
+  bio String? @db.Text
+  bio_visibility Visibility @default(public)
+  is_active Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime
+  owned_communities Communities[]
+  following_communities CommunityFollowers[]
+  bookmarks UserBookmarks[]
+  uploaded_attachments Attachments[]
+  announcements Announcement[]
+  community_request_sent CommunityRequests[] @relation("request_sender")
+  community_request_received CommunityRequests[] @relation("request_receiver")
+  community_users CommunityMembers[]
+  discussion_participated Discussions[]
+  discussion_replied DiscussionReply[]
+  community_converation_participants ConversationParticipant[] @relation("ConversationParticipantUser")
+  coversation_user_removed ConversationParticipant[] @relation("ConversationRemovedByUser")
+  conversation_messages Message[]
+  followed_users UserFollowers[] @relation("user_followers")
+  following_users UserFollowers[] @relation("user_following")
+  blocker_users UserBlocks[] @relation("user_blocker")
+  blocked_users UserBlocks[] @relation("user_blocked")
+  
+  // New features relations
+  created_events Event[]
+  event_registrations EventRegistration[]
+  event_attendees EventAttendee[]
+  uploaded_resources CommunityResource[]
+  created_polls Poll[]
+  poll_votes PollVote[]
+  created_surveys Survey[]
+  survey_responses SurveyResponse[]
+  expertise_profile ExpertiseProfile?
+  urgency_notifications UrgencyNotification[]
+  event_notifications EventNotification[]
+  scanned_attendees EventAttendee[] @relation("attendee_checker")
+  solution_validation_reports SolutionValidationReport[]
+  solution_upvotes SolutionUpvote[]
+  notifications_received InAppNotification[] @relation("notification_recipient")
+  notifications_sent InAppNotification[] @relation("notification_sender")
+
+  @@map("users")
+}
+
+model Communities {
+  id String @id @db.Uuid @default(uuid())
+  owner_id String @db.Uuid 
+  owner Users @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  name String
+  description String? @db.Text
+  banner_url String? @db.Text
+  logo_url String? @db.Text
+  is_visible_public Visibility @default(public)
+  anyone_can_join Boolean @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime
+  followers CommunityFollowers[]
+  categories CommunityCategory[]
+  announcements Announcement[]
+  members CommunityMembers[]
+  community_discussions Discussions[]
+  community_conversations Conversation[]
+
+  // New features relations
+  events Event[]
+  resources CommunityResource[]
+  polls Poll[]
+  surveys Survey[]
+
+  @@map("communities")
+}
+
+model CommunityCategory {
+  community_id String @db.Uuid @default(uuid())
+  catogory_id String @db.Uuid()
+  community Communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  catogory CategoriesMaster @relation(fields: [catogory_id], references: [id], onDelete: Cascade)
+
+  @@id([community_id, catogory_id])
+  @@map("community_categories")
+}
+
+model CommunityFollowers {
+  id String @id @db.Uuid @default(uuid())
+  community_id String @db.Uuid
+  follower_id String @db.Uuid
+  follower Users @relation(fields: [follower_id], references: [id], onDelete: Cascade)
+  community Communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+
+  @@map("community_followers")
+}
+
+model UserBookmarks {
+  id String @id @db.Uuid @default(uuid())
+  user_id String @db.Uuid
+  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  entity_type String
+  entity_id String @db.Uuid
+  created_at DateTime @default(now())
+
+  @@map("user_bookmarks")
+}
+
+model Attachments {
+  id String @id @db.Uuid @default(uuid())
+  entity_id String @db.Uuid
+  uploader_id String @db.Uuid
+  file_url String @db.Text
+  file_name String @db.VarChar(255)
+  file_type String @db.VarChar(100)
+  file_size Int?
+  s3_key String @db.Text
+  entity_type String? @db.VarChar(50)
+  uploaded_by Users @relation(fields: [uploader_id], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  announcement_attachments Announcement[]
+  discussion_attachments Discussions[]
+   
+  @@map("attachments")
+}
+
+model UserFollowers {
+  id String @id @db.Uuid @default(uuid())
+  follower_id String @db.Uuid
+  following_id String @db.Uuid
+  followed_at DateTime @default(now())
+  followers Users @relation("user_followers", fields: [follower_id], references: [id], onDelete: Cascade)
+  following Users @relation("user_following", fields: [following_id], references: [id], onDelete: Cascade)
+
+  @@unique([follower_id, following_id])
+  @@map("user_followers")
+}
+
+model UserBlocks {
+  id String @id @db.Uuid @default(uuid())
+  blocker_id String @db.Uuid
+  blocked_id String @db.Uuid
+  reason String? @db.Text
+  blocked_at DateTime @default(now())
+  blocker Users @relation("user_blocker", fields: [blocker_id], references: [id], onDelete: Cascade)
+  blocked Users @relation("user_blocked", fields: [blocked_id], references: [id], onDelete: Cascade)
+
+  @@map("user_blocks")
+}
+
+model Announcement {
+  id String @id @default(uuid()) @db.Uuid
+  communityId String @db.Uuid
+  authorId String @db.Uuid
+  title String @db.VarChar(255)
+  content String
+  isPinned Boolean @default(false)
+  attachmentId String? @db.Uuid
+  publishAt DateTime?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  community Communities @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  author Users @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  attachment Attachments? @relation(fields: [attachmentId], references: [id], onDelete: SetNull)
+
+  @@map("announcements")
+}
+
+model CommunityRequests {
+  id String @id @default(uuid()) @db.Uuid
+  sender_id String @db.Uuid
+  receiver_id String @db.Uuid
+  isRejected Boolean @default(false)
+  reason String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedBy String? @db.Uuid
+  updatedBy String? @db.Uuid
+
+  sender Users @relation("request_sender", fields: [sender_id], references: [id], onDelete: Cascade)
+  receiver Users @relation("request_receiver", fields: [receiver_id], references: [id], onDelete: Cascade)
+
+  @@map("community_requests")
+}
+
+model CommunityMembers {
+  id String @id @default(uuid()) @db.Uuid
+  community_id String @db.Uuid
+  user_id String @db.Uuid
+  role String @db.Uuid
+  joined_at DateTime
+  leaved_at DateTime?
+  isDeleted Boolean @default(false)
+  isActive String? @db.Uuid
+  deleted_at DateTime?
+  deleted_by String? @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  updated_by String? @db.Uuid
+
+  community Communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  member_role RolesMaster @relation(fields: [role], references: [id])
+
+  @@map("community_members")
+}
+
+model Discussions {
+  id String @id @default(uuid()) @db.Uuid
+  community_id String @db.Uuid
+  author_id String @db.Uuid
+  title String @db.VarChar(255)
+  content String
+  is_pinned Boolean @default(false)
+  is_locked Boolean @default(false)
+  attachments_id String? @db.Uuid
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  community Communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  author Users @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  attachment Attachments? @relation(fields: [attachments_id], references: [id], onDelete: SetNull)
+  replies DiscussionReply[]
+  tags DiscussionTags[]
+  embedding DiscussionEmbeddings?
+  urgency DiscussionUrgency?
+  urgency_notifications UrgencyNotification[]
+
+  @@map("discussions")
+}
+
+model DiscussionReply {
+  id String @id @default(uuid()) @db.Uuid
+  discussionId String @db.Uuid
+  parentReplyId String? @db.Uuid
+  authorId String @db.Uuid
+  content String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  is_solution Boolean @default(false)
+  is_op_confirmed Boolean @default(false)
+  op_confirmed_at DateTime?
+  op_confirmation_note String? @db.Text
+  upvotes Int @default(0)
+  is_flagged_for_review Boolean @default(false)
+  flagged_reason String? @db.Text
+  flagged_at DateTime?
+
+  discussion Discussions @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  parentReply DiscussionReply? @relation("ReplyHierarchy", fields: [parentReplyId], references: [id], onDelete: Cascade)
+  childReplies DiscussionReply[] @relation("ReplyHierarchy")
+  author Users @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  validation_reports SolutionValidationReport[]
+  upvote_records SolutionUpvote[]
+
+  @@map("discussion_replies")
+}
+
+model DiscussionTags {
+  discussionId String @db.Uuid
+  tagId String @db.Uuid
+   
+  discussion Discussions @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  tag TagsMaster @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([discussionId, tagId])
+  @@map("discussion_tags")
+}
+
+model Conversation {
+  id String @id @default(uuid()) @db.Uuid
+  communityId String @db.Uuid
+  name String @db.VarChar(150)
+  type Int
+  createdAt DateTime @default(now())
+
+  community Communities @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  participants ConversationParticipant[]
+  messages Message[]
+
+  @@index([communityId])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  conversationId String @db.Uuid
+  userId String @db.Uuid
+  joinedAt DateTime @default(now())
+  isRemoved Boolean @default(false)
+  removedBy String? @db.Uuid
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user Users @relation("ConversationParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+  removed_user Users? @relation("ConversationRemovedByUser", fields: [removedBy], references: [id], onDelete: SetNull)
+
+  @@id([conversationId, userId])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id String @id @default(uuid()) @db.Uuid
+  conversationId String @db.Uuid
+  senderId String @db.Uuid
+  content String
+  attachmentUrl String? @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender Users @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// ----------------- NEW MODULES -----------------
+
+// 1. Events, Event Registrations, Event Attendees
+model Event {
+  id String @id @default(uuid()) @db.Uuid
+  community_id String @db.Uuid
+  creator_id String @db.Uuid
+  title String @db.VarChar(255)
+  description String? @db.Text
+  cover_image_url String? @db.Text
+  location String? @db.Text
+  is_online Boolean @default(true)
+  meeting_link String? @db.Text
+  start_time DateTime
+  end_time DateTime
+  max_attendees Int?
+  registration_deadline DateTime?
+  status String @default("published") // draft, published, cancelled, completed
+  is_cancelled Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  community Communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  creator Users @relation(fields: [creator_id], references: [id], onDelete: Cascade)
+  registrations EventRegistration[]
+  attendees EventAttendee[]
+  notifications EventNotification[]
+
+  @@map("events")
+}
+
+model EventRegistration {
+  id String @id @default(uuid()) @db.Uuid
+  event_id String @db.Uuid
+  user_id String @db.Uuid
+  status String @default("registered") // registered, waitlisted, cancelled
+  waitlist_position Int?
+  qr_ticket_token String? @unique
+  qr_ticket_issued_at DateTime?
+  notes String? @db.Text
+  registered_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  event Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([event_id, user_id])
+  @@map("event_registrations")
+}
+
+model EventAttendee {
+  id String @id @default(uuid()) @db.Uuid
+  event_id String @db.Uuid
+  user_id String @db.Uuid
+  checked_in Boolean @default(false)
+  checked_in_at DateTime?
+  checked_in_by String? @db.Uuid
+  ticket_token String?
+  created_at DateTime @default(now())
+
+  event Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  checker Users? @relation("attendee_checker", fields: [checked_in_by], references: [id], onDelete: SetNull)
+
+  @@unique([event_id, user_id])
+  @@map("event_attendees")
+}
+
+model EventNotification {
+  id String @id @default(uuid()) @db.Uuid
+  event_id String @db.Uuid
+  user_id String @db.Uuid
+  type String @db.VarChar(50) // registration_confirmed, waitlist_joined, waitlist_promoted, event_reminder_24h, event_cancelled, event_rescheduled
+  sent_at DateTime @default(now())
+  metadata Json?
+
+  event Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([event_id, user_id, type])
+  @@map("event_notifications")
+}
+
+// 2. Community Resources
+model CommunityResource {
+  id String @id @default(uuid()) @db.Uuid
+  community_id String @db.Uuid
+  uploader_id String @db.Uuid
+  title String @db.VarChar(255)
+  description String? @db.Text
+  file_url String @db.Text
+  file_type String @db.VarChar(100)
+  file_size Int?
+  category String? @db.VarChar(100)
+  download_count Int @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  community Communities @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  uploader Users @relation(fields: [uploader_id], references: [id], onDelete: Cascade)
+
+  @@map("community_resources")
+}
+
+// 3. Polls and Poll Votes
+model Poll {
+  id String @id @default(uuid()) @db.Uuid
+  community_id String? @db.Uuid
+  creator_id String @db.Uuid
+  question String @db.VarChar(500)
+  is_multiple_choice Boolean @default(false)
+  expires_at DateTime?
+  is_closed Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  community Communities? @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  creator Users @relation(fields: [creator_id], references: [id], onDelete: Cascade)
+  options PollOption[]
+  votes PollVote[]
+
+  @@map("polls")
+}
+
+model PollOption {
+  id String @id @default(uuid()) @db.Uuid
+  poll_id String @db.Uuid
+  text String @db.VarChar(255)
+  vote_count Int @default(0)
+
+  poll Poll @relation(fields: [poll_id], references: [id], onDelete: Cascade)
+  votes PollVote[]
+
+  @@map("poll_options")
+}
+
+model PollVote {
+  id String @id @default(uuid()) @db.Uuid
+  poll_id String @db.Uuid
+  option_id String @db.Uuid
+  user_id String @db.Uuid
+  voted_at DateTime @default(now())
+
+  poll Poll @relation(fields: [poll_id], references: [id], onDelete: Cascade)
+  option PollOption @relation(fields: [option_id], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([poll_id, option_id, user_id])
+  @@map("poll_votes")
+}
+
+// 4. Surveys and Survey Responses
+model Survey {
+  id String @id @default(uuid()) @db.Uuid
+  community_id String? @db.Uuid
+  creator_id String @db.Uuid
+  title String @db.VarChar(255)
+  description String? @db.Text
+  expires_at DateTime?
+  is_closed Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  community Communities? @relation(fields: [community_id], references: [id], onDelete: Cascade)
+  creator Users @relation(fields: [creator_id], references: [id], onDelete: Cascade)
+  questions SurveyQuestion[]
+  responses SurveyResponse[]
+
+  @@map("surveys")
+}
+
+model SurveyQuestion {
+  id String @id @default(uuid()) @db.Uuid
+  survey_id String @db.Uuid
+  question_text String @db.Text
+  question_type String @default("text") // text, radio, checkbox, scale
+  options Json? // list of option strings
+  is_required Boolean @default(true)
+  order Int @default(0)
+
+  survey Survey @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+
+  @@map("survey_questions")
+}
+
+model SurveyResponse {
+  id String @id @default(uuid()) @db.Uuid
+  survey_id String @db.Uuid
+  user_id String @db.Uuid
+  answers Json // dictionary of answers
+  submitted_at DateTime @default(now())
+
+  survey Survey @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([survey_id, user_id])
+  @@map("survey_responses")
+}
+
+// 5. Auth Refresh Token Blacklist for Logout / Invalidation
+model RefreshTokenBlacklist {
+  id String @id @default(uuid()) @db.Uuid
+  token_hash String @unique
+  user_id String? @db.Uuid
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  @@map("refresh_token_blacklist")
+}
+
+// 6. Phase 2: Semantic Knowledge Search & Discussion Embeddings
+model DiscussionEmbeddings {
+  id String @id @default(uuid()) @db.Uuid
+  discussion_id String @unique @db.Uuid
+  embedding Json
+  model String @default("all-MiniLM-L6-v2")
+  dimensions Int @default(384)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  discussion Discussions @relation(fields: [discussion_id], references: [id], onDelete: Cascade)
+
+  @@index([discussion_id])
+  @@map("discussion_embeddings")
+}
+
+// 7. Unanswered Problem Prioritization System
+model DiscussionUrgency {
+  id                  String   @id @default(uuid()) @db.Uuid
+  discussion_id       String   @unique @db.Uuid
+  urgency_score       Float    @default(0)   // 0-100
+  is_answered         Boolean  @default(false)
+  answer_detected_at  DateTime?
+  hours_since_posted  Float    @default(0)
+  reply_count         Int      @default(0)
+  view_hint           Int      @default(0)
+  last_computed_at    DateTime @default(now())
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  discussion Discussions @relation(fields: [discussion_id], references: [id], onDelete: Cascade)
+
+  @@index([urgency_score])
+  @@index([is_answered])
+  @@map("discussion_urgency")
+}
+
+model ExpertiseProfile {
+  id           String   @id @default(uuid()) @db.Uuid
+  user_id      String   @unique @db.Uuid
+  tag_scores   Json     // { "fastapi": 42, "docker": 31, ... }
+  total_replies Int     @default(0)
+  helpful_replies Int   @default(0)
+  last_active  DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  user Users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("expertise_profiles")
+}
+
+model UrgencyNotification {
+  id            String   @id @default(uuid()) @db.Uuid
+  discussion_id String   @db.Uuid
+  user_id       String   @db.Uuid
+  sent_at       DateTime @default(now())
+  was_helpful   Boolean?
+  match_score   Float    @default(0)
+
+  discussion Discussions @relation(fields: [discussion_id], references: [id], onDelete: Cascade)
+  user       Users       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([discussion_id, user_id])
+  @@map("urgency_notifications")
+}
+
+// 8. Phase 5: Solution Validation & Unreliable Solution Detection
+model SolutionValidationReport {
+  id                 String   @id @default(uuid()) @db.Uuid
+  reply_id           String   @db.Uuid
+  user_id            String   @db.Uuid
+  worked             Boolean  // true = worked/success, false = failed/unsuccessful
+  attempt_notes      String?  @db.Text
+  evidence_text      String?  @db.Text
+  environment_info   String?  @db.Text // e.g. "Next.js 16.2, Node 22, Ubuntu 24.04"
+  version_tested     String?  @db.VarChar(100)
+  is_outdated_report Boolean  @default(false)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  reply DiscussionReply @relation(fields: [reply_id], references: [id], onDelete: Cascade)
+  user  Users           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([reply_id, user_id])
+  @@index([reply_id, worked])
+  @@map("solution_validation_reports")
+}
+
+model SolutionUpvote {
+  id         String   @id @default(uuid()) @db.Uuid
+  reply_id   String   @db.Uuid
+  user_id    String   @db.Uuid
+  created_at DateTime @default(now())
+
+  reply DiscussionReply @relation(fields: [reply_id], references: [id], onDelete: Cascade)
+  user  Users           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([reply_id, user_id])
+  @@map("solution_upvotes")
+}
+
+// 9. Comprehensive In-App Notifications
+model InAppNotification {
+  id          String    @id @default(uuid()) @db.Uuid
+  user_id     String    @db.Uuid
+  sender_id   String?   @db.Uuid
+  title       String    @db.VarChar(255)
+  message     String    @db.Text
+  type        String    @db.VarChar(50) // reply_created, solution_verified, solution_upvoted, expert_tagged, community_joined, discussion_created, poll_voted, event_registered
+  entity_type String?   @db.VarChar(50) // discussion, community, event, poll, reply
+  entity_id   String?   @db.Text
+  action_url  String?   @db.Text
+  is_read     Boolean   @default(false)
+  read_at     DateTime?
+  created_at  DateTime  @default(now())
+
+  recipient   Users     @relation("notification_recipient", fields: [user_id], references: [id], onDelete: Cascade)
+  sender      Users?    @relation("notification_sender", fields: [sender_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id, is_read])
+  @@index([created_at])
+  @@map("in_app_notifications")
+}
+

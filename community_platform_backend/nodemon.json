@@ -1,0 +1,8 @@
+{
+  "watch": ["src", "server.ts"],
+  "ext": "ts,json",
+  "exec": "npx tsx server.ts",
+  "execMap": {
+    "ts": "npx tsx"
+  }
+}
